@@ -6,6 +6,10 @@ app.use(express.json());
 
 const users = [];
 
+app.get("/", function (req, res) {
+  res.sendFile(__dirname + "/public/index.html");
+});
+
 app.post("/signup", (req, res) => {
   const { username, password } = req.body;
 
@@ -17,30 +21,39 @@ app.post("/signup", (req, res) => {
   res.json({
     message: "You are signed up",
   });
-  console.log(users);
 });
 
-app.post("/signin", (req, res) => {
-  const { username, password } = req.body;
-  const user = users.find(
-    (user) => user.username === username && user.password === password
-  );
+app.post("/signin", function (req, res) {
+  const username = req.body.username;
+  const password = req.body.password;
 
-  if (!user) {
-    return res.json({
-      message: "Incorrect Credentials",
+  let foundUser = null;
+
+  for (let i = 0; i < users.length; i++) {
+    if (users[i].username === username && users[i].password === password) {
+      foundUser = users[i];
+    }
+  }
+
+  if (!foundUser) {
+    res.json({
+      message: "Credentials incorrect",
     });
+    return;
   } else {
     const token = jwt.sign(
       {
-        username,
+        username: foundUser.username,
       },
       JWT_SECRET
     );
 
     res.header("jwt", token);
+
+    res.header("random", "harkirat");
+
     res.json({
-      token,
+      token: token,
     });
   }
 });
