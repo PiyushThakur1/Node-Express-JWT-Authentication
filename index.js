@@ -25,48 +25,49 @@ app.post("/signin", (req, res) => {
   const user = users.find(
     (user) => user.username === username && user.password === password
   );
-  if (user) {
+
+  if (!user) {
+    return res.json({
+      message: "Incorrect Credentials",
+    });
+  } else {
     const token = jwt.sign(
       {
-        username: username,
+        username,
       },
       JWT_SECRET
     );
 
-    // user.token = token;
+    res.header("jwt", token);
     res.json({
       token,
     });
-  } else {
-    res.status(403).send({
-      message: "Invalid username or password",
-    });
   }
-  console.log(user);
 });
 
-app.get("/me", (req, res) => {
+function auth(req, res, next) {
   const token = req.headers.token; // jwt
   const decodeInfo = jwt.verify(token, JWT_SECRET);
-  const username = decodeInfo.username;
-
+  if (decodeInfo.username) {
+    req.username = decodeInfo.username;
+    next();
+  } else {
+    res.json({
+      message: "You are not Logged in",
+    });
+  }
+}
+app.get("/me", auth, (req, res) => {
   let founduser = null;
   for (let i = 0; i < users.length; i++) {
-    if (users[i].username == username) {
+    if (users[i].username == req.username) {
       founduser = users[i];
     }
   }
-
-  if (founduser) {
-    res.json({
-      username: founduser.username,
-      password: founduser.password,
-    });
-  } else {
-    res.json({
-      message: "token invalid",
-    });
-  }
+  res.json({
+    username: founduser.username,
+    password: founduser.password,
+  });
 });
 
 app.listen(3000);
