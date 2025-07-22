@@ -71,15 +71,21 @@ function auth(req, res, next) {
   }
 }
 app.get("/me", auth, (req, res) => {
-  let founduser = null;
+  // req = {status, headers...., username, password, userFirstName, random; ":123123"}
+  const currentUser = req.username;
+  // const token = req.headers.token;
+  // const decodedData = jwt.verify(token, JWT_SECRET);
+  // const currentUser = decodedData.username
+
   for (let i = 0; i < users.length; i++) {
-    if (users[i].username == req.username) {
-      founduser = users[i];
+    if (users[i].username === currentUser) {
+      foundUser = users[i];
     }
   }
+
   res.json({
-    username: founduser.username,
-    password: founduser.password,
+    username: foundUser.username,
+    password: foundUser.password,
   });
 });
 
