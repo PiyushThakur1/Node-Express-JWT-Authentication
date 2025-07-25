@@ -71,11 +71,8 @@ function auth(req, res, next) {
   }
 }
 app.get("/me", auth, (req, res) => {
-  // req = {status, headers...., username, password, userFirstName, random; ":123123"}
   const currentUser = req.username;
-  // const token = req.headers.token;
-  // const decodedData = jwt.verify(token, JWT_SECRET);
-  // const currentUser = decodedData.username
+  let foundUser = null;
 
   for (let i = 0; i < users.length; i++) {
     if (users[i].username === currentUser) {
@@ -83,10 +80,14 @@ app.get("/me", auth, (req, res) => {
     }
   }
 
-  res.json({
-    username: foundUser.username,
-    password: foundUser.password,
-  });
+  if (foundUser) {
+    res.json({
+      username: foundUser.username,
+      password: foundUser.password,
+    });
+  } else {
+    res.status(404).json({ message: "User not found" });
+  }
 });
 
 app.listen(3000);
